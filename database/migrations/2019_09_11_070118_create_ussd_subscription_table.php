@@ -20,7 +20,7 @@ class CreateUssdSubscriptionTable extends Migration
             $table->string('ussdOperation')->nullable();
             $table->string('requestId')->nullable();
             $table->string('sessionId')->nullable();
-            $table->string('message')->nullable();
+            $table->text('message')->nullable();
             $table->string('encoding')->nullable();
             $table->string('version')->nullable();
             $table->timestamps();

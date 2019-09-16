@@ -282,6 +282,7 @@ class SMSController extends Controller
 
 public function ussdReceive(Request $request){
     if(isset($request)){
+        dd('here');
         $ussd = new USSDSub;
         $ussd->message = $request;
         $ussd->save();
