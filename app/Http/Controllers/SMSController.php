@@ -285,9 +285,7 @@ public function ussdReceive(Request $request){
     if(isset($request)){
       
         $ussd = new USSDSub;
-        $ussd->message = $request;
-        $ussd->save();
-        die();
+       
         $ussd->message = isset($request->message) ? $request->message : '';
         $ussd->ussdOperation = isset($request->ussdOperation) ? $request->ussdOperation : '';
         $ussd->requestId = isset($request->requestId) ? $request->requestId : '';
