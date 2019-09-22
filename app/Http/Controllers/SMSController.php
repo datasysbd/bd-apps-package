@@ -411,5 +411,15 @@ public function ussdReceive(Request $request){
         }
         return response()->json($data);
     }
+
+    public function testApi(Request $request){
+        $ip = $request->ip();  
+        $message = $request->message; 
+        $data['client_ip'] = isset($ip) ? $ip : 'Not Found';
+        $data['message'] = isset($messag) ? $message : 'No Message';
+         
+
+        return response()->json($data);
+    }
        
 }
