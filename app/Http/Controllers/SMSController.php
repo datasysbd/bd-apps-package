@@ -287,7 +287,7 @@ public function ussdReceive(Request $request){
         $ussd_msg = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
         $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
         $reponse_subscribe = $this->subscribe($request->applicationId, $request->sourceAddress);
-        
+
         $ussd = new USSDSub;
        
         $ussd->message = isset($request->message) ? $request->message : '';
@@ -419,10 +419,10 @@ public function ussdReceive(Request $request){
     }
 
 
-    public function ussdSender($app_id, $sessionId, $message, $destinationAddress, $ussdOperation='mo-fin'){
+    public function ussdSender($app_id, $sessionId, $message, $destinationAddress, $ussdOperation='mt-fin'){
         $url = "https://developer.bdapps.com/ussd/send";		
         $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
-    
+        
         $arrayField = array("applicationId" => $app_id,
         "password" => $password,
         "message" => $message,
@@ -435,7 +435,7 @@ public function ussdReceive(Request $request){
      $jsonObjectFields = json_encode($arrayField);
 
      $sms_ob = new SmsSender($url, $app_id, $password);
-
+        
      return $sms_ob->sendRequest($jsonObjectFields,$url);
     }
 
