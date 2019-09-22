@@ -22,10 +22,10 @@ class SMSController extends Controller
         $message = $request->input('message');
         $app_id = $request->input('app_id');
         $password = $request->input('password');
-
         $sms_ob = new SmsSender($url, $app_id, $password);  
         $response =  $sms_ob->broadcast($message);
-        $response['client_ip'] = $request->ip();
+        $ip = $request->ip();  
+        $response['client_ip'] = isset($ip) ? $ip : 'Not Found';
         return $response;
 
     }
