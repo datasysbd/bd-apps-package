@@ -416,7 +416,7 @@ public function ussdReceive(Request $request){
         $ip = $request->ip();  
         $message = $request->message; 
         $data['client_ip'] = isset($ip) ? $ip : 'Not Found';
-        $data['message'] = isset($messag) ? $message : 'No Message';
+        $data['message'] = isset($message) ? $message : 'No Message';
          
 
         return response()->json($data);
