@@ -24,8 +24,8 @@ class SMSController extends Controller
         $password = $request->input('password');
         $sms_ob = new SmsSender($url, $app_id, $password);  
         $response =  $sms_ob->broadcast($message);
-        $ip = $request->ip();  
-        $response['client_ip'] = isset($ip) ? $ip : 'Not Found';
+        // $ip = $request->ip();  
+        // $response['client_ip'] = isset($ip) ? $ip : 'Not Found';
         return $response;
 
     }
