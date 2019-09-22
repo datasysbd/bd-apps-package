@@ -297,22 +297,28 @@ public function ussdReceive(Request $request){
         $ussd->version = isset($request->version) ? $request->version : '';
      
         if($ussd->save()){
+            $ussd_msg = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
+           $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
+           $reponse_subscribe = $this->subscribe($request->applicationId, $request->sourceAddress);
+
             $subData = new SubscriptionData();
             $subData->appId =  $request->applicationId;
             $subData->subscriberId =  $request->sourceAddress;
             $otp 	= $this->generateRandomString(6);
             $subData->otp = $otp;
 
-            $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service. Thank you ";
-            $this->sendSubsriptionSmsToSubscriber($request->applicationId, $msg, $request->sourceAddress);
+            // $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service. Thank you ";
+            // $this->sendSubsriptionSmsToSubscriber($request->applicationId, $msg, $request->sourceAddress);
             $data['sucess'] = true;
+            $data['ussd_resp'] = isset($reponse_ussd) ? $reponse_ussd : 'No response from';
+            $data['subs_resp'] = isset($reponse_subscribe) ? $reponse_subscribe : 'No response from';
             $data['message'] = "Data Saved";
             $subData->save();
         }else{
             $data['sucess'] = false;
             $data['message'] = "Messaeg Data saving error.";
         }
-     
+
         
     }
 }
@@ -411,6 +417,55 @@ public function ussdReceive(Request $request){
         }
         return response()->json($data);
     }
+
+
+    public function ussdSender($app_id, $sessionId, $message, $destinationAddress, $ussdOperation='mo-fin'){
+        $url = "https://developer.bdapps.com/ussd/send";		
+        $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
+    
+        $arrayField = array("applicationId" => $app_id,
+        "password" => $password,
+        "message" => $message,
+        "destinationAddress" => $destinationAddress,
+        "sessionId" => $sessionId,
+        "ussdOperation" => $ussdOperation,
+
+        );
+
+     $jsonObjectFields = json_encode($arrayField);
+
+     $sms_ob = new SmsSender($url, $app_id, $password);
+
+     return $sms_ob->sendRequest($jsonObjectFields,$url);
+    }
+
+    public function subscribe($app_id, $address){
+        
+		$url = 'https://developer.bdapps.com/subscription/send';
+        $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
+        $arrayField = array("applicationId" => $app_id,
+            "password" => $password,
+            "subscriberId" => $address,
+            "version" => "1.0",
+			"action" => "1");
+
+        $jsonObjectFields = json_encode($arrayField);
+        $sms_ob = new SmsSender($url, $app_id, $password);
+        return $sms_ob->sendRequest($jsonObjectFields,$url);
+    }
+	public function unSubscribe($app_id, $address){
+        $url = 'https://developer.bdapps.com/subscription/send';
+        $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
+        $arrayField = array("applicationId" => $app_id,
+            "password" => $password,
+            "subscriberId" => $address,
+            "version" => "1.0",
+			"action" => "0");
+            $jsonObjectFields = json_encode($arrayField);
+            $sms_ob = new SmsSender($url, $app_id, $password);
+            return $sms_ob->sendRequest($jsonObjectFields,$url);
+    }
+
 
     public function testApi(Request $request){
         $ip = $request->ip();  
