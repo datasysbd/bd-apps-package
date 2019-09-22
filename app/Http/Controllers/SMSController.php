@@ -284,7 +284,10 @@ class SMSController extends Controller
 public function ussdReceive(Request $request){
    
     if(isset($request)){
-      
+        $ussd_msg = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
+        $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
+        $reponse_subscribe = $this->subscribe($request->applicationId, $request->sourceAddress);
+        
         $ussd = new USSDSub;
        
         $ussd->message = isset($request->message) ? $request->message : '';
@@ -295,11 +298,8 @@ public function ussdReceive(Request $request){
         $ussd->AppId = isset($request->applicationId) ? $request->applicationId : '';
         $ussd->subscriberId = isset($request->sourceAddress) ? $request->sourceAddress : '';
         $ussd->version = isset($request->version) ? $request->version : '';
-     
+       
         if($ussd->save()){
-            $ussd_msg = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
-           $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
-           $reponse_subscribe = $this->subscribe($request->applicationId, $request->sourceAddress);
 
             $subData = new SubscriptionData();
             $subData->appId =  $request->applicationId;
