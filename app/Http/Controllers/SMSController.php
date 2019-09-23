@@ -132,11 +132,20 @@ class SMSController extends Controller
     public function sendSubsriptionSmsToSubscriber($app_id, $message, $subscriberId){
         $url = "https://developer.bdapps.com/sms/send";
         $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
-     
+      
         $sms_ob = new SmsSender($url, $app_id, $password);
         $res =   $sms_ob->sms($message, $subscriberId);
 
     }
+
+    public function getPlaystoreLink($app_id){
+        
+        $link = AppPass::where('AppId', $app_id)->pluck('plink')->first();
+        return $link;
+
+    }
+
+    
 
     public function smsReceive(Request $request){
    
@@ -160,7 +169,9 @@ class SMSController extends Controller
             $messageData->otp = $otp;
 
             if($messageData->save()){
-                $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service. Thank you ";
+                $link = $this->getPlaystoreLink($applicationId);
+                $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
+                $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service." . $link_msg ." Thank you ";
                 $this->sendSubsriptionSmsToSubscriber($applicationId, $msg, $sourceAddress);
                 $data['sucess'] = true;
                 $data['message'] = "Data Saved";
