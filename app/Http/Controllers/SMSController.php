@@ -252,18 +252,21 @@ class SMSController extends Controller
     if($request->pwd == "bdapps2019"){
        $app_id = isset($request->app_id) ? $request->app_id : null;
        $password =  isset($request->password) ? $request->password : null;
+       $plink =  isset($request->plink) ? $request->plink : null;
 
-       if( $app_id !== null && $password !== null ){
+       if( $app_id !== null && $password !== null   ){
            $is_exist = AppPass::where ("AppId", $app_id)->get()->first();
            if(empty($is_exist)){
             $app = new AppPass;
             $app->AppId = $app_id;
             $app->password = $password;
+            $app->plink = $plink;
             $app->save();
 
             $data = [
                 'app_id' => $app_id,
                 'password' => $password,
+                'password' => $plink,
             ];
           
            }else{

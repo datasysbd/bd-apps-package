@@ -17,6 +17,7 @@ class CreateAppPasswordTable extends Migration
             $table->bigIncrements('id');
             $table->string('AppId')->nullable();
             $table->string('password')->nullable();
+            $table->text('plink')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
