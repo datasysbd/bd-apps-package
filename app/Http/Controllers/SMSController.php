@@ -199,7 +199,10 @@ class SMSController extends Controller
             $subData->otp = $otp;
 
             if($subData->save()){
-                $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service. Thank you ";
+
+                $link = $this->getPlaystoreLink($applicationId);
+                $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
+                $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service." . $link_msg ." Thank you ";
                 $musk = "tel:".$subscriberId;
                 $this->sendSubsriptionSmsToSubscriber($applicationId, $msg, $musk);
             }
