@@ -253,7 +253,7 @@ class SMSController extends Controller
                 $check->device_id = isset($device_id) ? $device_id : null;
                 $check->count = $check->count + 1;
                 $check->save();
-                $data['is_there'] = $check->count;
+                $data['count'] = $check->count;
                 $data['is_there'] = true;
               
             }
