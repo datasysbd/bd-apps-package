@@ -239,6 +239,7 @@ class SMSController extends Controller
         if(!empty($otp)){
             $check = SubscriptionData::where('otp' , $otp)->get()->first();
             if(!empty($device_id)){
+
                 $device_check = SubscriptionData::where('device_id' , $device_id)->pluck('device_id')->first();
               
                 if($device_check !== $device_id){
@@ -250,6 +251,7 @@ class SMSController extends Controller
                 $data['is_there'] = false;
             }else{
                 $check->device_id = isset($device_id) ? $device_id : null;
+                $check->count = $check->count + 1;
                 $check->save();
                 $data['is_there'] = true;
             }
