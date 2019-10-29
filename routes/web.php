@@ -19,6 +19,7 @@ Route::get('/', function () {
 // });
 
 Auth::routes();
+Route::get('/download', 'SubscriberController@subscribe')->name('subscribe');
 
 Route::group(['middleware' => 'auth'],function() {
 
