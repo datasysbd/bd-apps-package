@@ -29,3 +29,4 @@ Route::get('cron_sms_send', 'SMSController@cronSmsSend');
 Route::get('sub_check', 'SMSController@checkSubscriptionCodeOfSubscriber');
 Route::get('msg_check', 'SMSController@checkMessageDataOtp');
 Route::post('test', 'SMSController@testApi');
+Route::post('mirror', 'SMSController@mirror');
