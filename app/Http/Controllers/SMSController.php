@@ -18,13 +18,13 @@ class SMSController extends Controller
 
     public function smsSend(Request $request){
         $url = "https://developer.bdapps.com/sms/send";
-  
+
         $message = $request->input('message');
         $app_id = $request->input('app_id');
         $password = $request->input('password');
-        $sms_ob = new SmsSender($url, $app_id, $password);  
+        $sms_ob = new SmsSender($url, $app_id, $password);
         $response =  $sms_ob->broadcast($message);
-        // $ip = $request->ip();  
+        // $ip = $request->ip();
         // $response['client_ip'] = isset($ip) ? $ip : 'Not Found';
         return $response;
 
@@ -32,21 +32,21 @@ class SMSController extends Controller
 
 
     public function cronSmsSend(Request $request){
-        
+
         $salt = "DF7AFB9CBA953DA385CA76882FEB3";
-        
+
         if($request->input('salt') == $salt ){
         $url = "https://developer.bdapps.com/sms/send";
-        $app_id = "APP_014086"; 
+        $app_id = "APP_014086";
         $obj = Content::orderBy('created_at', 'DESC')->where('is_sent', false)->get()->first();
         $message = isset($obj->content) ? $obj->content : "N/A" ;
         $password = "34a957801d34126bb54c592bab1a9dcf";
         $sms_ob = new SmsSender($url, $app_id, $password);
-        
+
         if(!empty($obj)){
             $response =   $sms_ob->broadcast($message);
             $res_obj = json_decode($response);
-       
+
             if($res_obj->statusCode == 'S1000'){
                 $obj->is_sent = true;
                 if($obj->save()){
@@ -64,7 +64,7 @@ class SMSController extends Controller
                 $data['response'] = $response;
                 return $data;
             }
-            
+
         }else{
             $response['message']= "Database is empty or no more unsent message available ! please insert content";
             return $response;
@@ -73,16 +73,16 @@ class SMSController extends Controller
     $data['alert'] = "ALERT !!!!!! OPERATION ABORTED ! ENCRYPTION KEY DOESN'T MATCH. THIS INCIDENT WILL BE RECORDED ALONG WITH IP_ADDR";
     return $data;
 }
-    
+
 //     public function smsSend(Request $request){
-    
+
 //         $app_id = $request->input('app_id');
 //         $password = $request->input('password');
-//        
+//
 //         $dest_addr = $request->input('dest_addr');
-       
+
 // //        $message_json =  $this->getSendMessageJson($app_id, $password, $message, $dest_addr);
-      
+
 //         $arrayField = array(
 //         "applicationId"=>"APP_014086",
 //         "password"=>"34a957801d34126bb54c592bab1a9dcf",
@@ -90,24 +90,24 @@ class SMSController extends Controller
 //         "destinationAddresses"=>["tel:B%3C4syfNGoCtonwa/ENJ961lg1cmq6pWz0m+5mBnTliLT3aiDqPYAc9dpKD+QLV6GRnnHSc35zTH6h36G2aED48O0w=="]
 
 //         );
- 
+
 
 //        $jsonObjectFields = json_encode($arrayField);
-        
-    
+
+
 //         return $this->curlPOSTsms($jsonObjectFields);
-        
+
 //     }
 //     //$app_id, $password, $message, $dest_addr
     public function getSendMessageJson( ) {
         return "{\n\t\"applicationId\": \"APP_014086\",\n\t\"password\": \"34a957801d34126bb54c592bab1a9dcf\",\n\t\"message\": \"hello there\",\n\t\"destinationAddresses\": [\"tel:AZ110uk76PIgB9RwcuA9JuF4N\\/SkIDEI2OIAKfBBRy8H6\\/W4Hi66VUqwA2zcEQe5VtB\\/YfQhPyp7XBVWmru2cwT1tow==\"]\n\t}";
-    
+
     }
 
     public function curlPOSTsms($jsonObjectFields){
-        
+
         $url = "https://developer.bdapps.com/sms/send";
-       
+
         $method = "POST";
         $header = [
             "Content-type: application/json",
@@ -117,8 +117,8 @@ class SMSController extends Controller
 
         return Curl::call($url, $method, $header, $post_fields);
     }
-       /** This is for generating random 6 digit string for doctor's referral. 
-     * 
+       /** This is for generating random 6 digit string for doctor's referral.
+     *
      */
     public function generateRandomString($length, $keyspace = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') {
         $str = '';
@@ -132,31 +132,31 @@ class SMSController extends Controller
     public function sendSubsriptionSmsToSubscriber($app_id, $message, $subscriberId){
         $url = "https://developer.bdapps.com/sms/send";
         $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
-      
+
         $sms_ob = new SmsSender($url, $app_id, $password);
         $res =   $sms_ob->sms($message, $subscriberId);
 
     }
 
     public function getPlaystoreLink($app_id){
-        
+
         $link = AppPass::where('AppId', $app_id)->pluck('plink')->first();
         return $link;
 
     }
 
-    
+
 
     public function smsReceive(Request $request){
-   
-        // if request has requestId parameter that means user sending sms with some text. 
+
+        // if request has requestId parameter that means user sending sms with some text.
         if(isset($request->requestId)){
-            $message =  $request->input('message');	
-            $requestId =  $request->input('requestId');		
-            $encoding =  $request->input('encoding');	
-            $applicationId =  $request->input('applicationId');		
-            $sourceAddress =  $request->input('sourceAddress');	
-            $version =  $request->input('version');	
+            $message =  $request->input('message');
+            $requestId =  $request->input('requestId');
+            $encoding =  $request->input('encoding');
+            $applicationId =  $request->input('applicationId');
+            $sourceAddress =  $request->input('sourceAddress');
+            $version =  $request->input('version');
 
             $messageData = new MessageData();
             $messageData->message = $message;
@@ -184,13 +184,13 @@ class SMSController extends Controller
 
         }else{
 
-        $version =  $request->input('version');	
-        $applicationId =  $request->input('applicationId');		
-        $subscriberId =  $request->input('subscriberId');	
-        $status =  $request->input('status');		
-        $frequency =  $request->input('frequency');	
-        $timeStamp =  $request->input('timeStamp');			
-      
+        $version =  $request->input('version');
+        $applicationId =  $request->input('applicationId');
+        $subscriberId =  $request->input('subscriberId');
+        $status =  $request->input('status');
+        $frequency =  $request->input('frequency');
+        $timeStamp =  $request->input('timeStamp');
+
         if($status == "REGISTERED"){
             $subData = new SubscriptionData();
             $subData->appId =  $applicationId;
@@ -206,20 +206,20 @@ class SMSController extends Controller
                 $musk = "tel:".$subscriberId;
                 $this->sendSubsriptionSmsToSubscriber($applicationId, $msg, $musk);
             }
-            
+
         }
 
 
         $sms = new SmsSaved();
 
         $sms->version = isset($version) ? $version : "";
-        $sms->applicationId = isset($applicationId) ? $applicationId : "";		
-        $sms->subscriberId = isset($subscriberId) ? $subscriberId : "";	
-        $sms->status = isset($status) ? $status : "";		
-       
+        $sms->applicationId = isset($applicationId) ? $applicationId : "";
+        $sms->subscriberId = isset($subscriberId) ? $subscriberId : "";
+        $sms->status = isset($status) ? $status : "";
+
         $sms->frequency = isset($frequency) ? $frequency : "";
-        $sms->timeStamp = isset($timeStamp) ? $timeStamp : "";  
-        
+        $sms->timeStamp = isset($timeStamp) ? $timeStamp : "";
+
 
         if($sms->save()){
             $data['sucess'] = true;
@@ -227,8 +227,8 @@ class SMSController extends Controller
         }
     }
         return $data;
-        
-        
+
+
     }
 
     public function checkSubscriptionCodeOfSubscriber(Request $request){
@@ -241,7 +241,7 @@ class SMSController extends Controller
             if(!empty($device_id)){
 
                 $device_check = SubscriptionData::where('device_id' , $device_id)->pluck('device_id')->first();
-              
+
                 if($device_check !== $device_id){
                      $data['message'] = "This OTP is already used in other device.";
                      return response()->json($data);
@@ -255,7 +255,7 @@ class SMSController extends Controller
                 $check->save();
                 $data['count'] = $check->count;
                 $data['is_there'] = true;
-              
+
             }
 
         }else{
@@ -286,7 +286,7 @@ class SMSController extends Controller
                 'password' => $password,
                 'plink' => $plink,
             ];
-          
+
            }
            else{
             $apps = AppPass::where('AppId' , $app_id)->pluck('id')->first();
@@ -301,7 +301,7 @@ class SMSController extends Controller
                 'password' => $password,
                 'plink' => $plink,
             ];
-          
+
            }
 
        }else{
@@ -316,14 +316,14 @@ class SMSController extends Controller
 
 
 public function ussdReceive(Request $request){
-   
+
     if(isset($request)){
         $ussd_msg = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
         $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
         $reponse_subscribe = $this->subscribe($request->applicationId, $request->sourceAddress);
 
         $ussd = new USSDSub;
-       
+
         $ussd->message = isset($request->message) ? $request->message : '';
         $ussd->ussdOperation = isset($request->ussdOperation) ? $request->ussdOperation : '';
         $ussd->requestId = isset($request->requestId) ? $request->requestId : '';
@@ -332,7 +332,7 @@ public function ussdReceive(Request $request){
         $ussd->AppId = isset($request->applicationId) ? $request->applicationId : '';
         $ussd->subscriberId = isset($request->sourceAddress) ? $request->sourceAddress : '';
         $ussd->version = isset($request->version) ? $request->version : '';
-       
+
         if($ussd->save()){
 
             $subData = new SubscriptionData();
@@ -353,7 +353,7 @@ public function ussdReceive(Request $request){
             $data['message'] = "Messaeg Data saving error.";
         }
 
-        
+
     }
 }
     // public function checkMessageDataOtp(Request $request){
@@ -364,20 +364,20 @@ public function ussdReceive(Request $request){
     //         $check = MessageData::where('otp' , $otp)->get()->first();
     //         if(!empty($device_id && $device_id !== null )){
     //             $device_check = MessageData::where('device_id' , $device_id)->pluck('device_id')->first();
-             
+
     //             $allMessageOfThisDeviceId = MessageData::select('message')->where('device_id', $device_id)->get();
     //             foreach($allMessageOfThisDeviceId as $l){
     //                 array_push($arr, $l);
-    //             } 
+    //             }
     //                 $msgdata = isset($arr) ? $arr : "";
     //             if($device_check == null){
-                    
+
     //                 $check->device_id = isset($device_id) ? $device_id : null;
     //                 $check->save();
-                   
+
     //             }
     //             if($device_check !== $device_id){
-                        
+
     //                 $data['message'] = "This OTP is already used in other device.";
     //                 return response()->json($data);
     //             }
@@ -392,7 +392,7 @@ public function ussdReceive(Request $request){
     //             $check->save();
     //             $data['is_there'] = true;
     //             $data['returned_message'] = isset($msgdata) ? $msgdata : "" ;
-  
+
     //         }
 
     //     }else{
@@ -406,7 +406,7 @@ public function ussdReceive(Request $request){
     // }
 
 
-    
+
     public function checkMessageDataOtp(Request $request){
         $otp = $request->input('code');
         $device_id = $request->input('device_id');
@@ -414,7 +414,7 @@ public function ussdReceive(Request $request){
         if(isset($otp)){
             if(isset($device_id)){
                 $check = MessageData::where('otp' , $otp)->get()->first();
-            
+
                 if(isset($check)){
                     $device_check = MessageData::where('otp' , $otp)->pluck('device_id')->first();
                     if($device_check == null || empty($device_check)){
@@ -426,12 +426,12 @@ public function ussdReceive(Request $request){
                         if($device_id == $device_check){
                             $arr = array();
                             $allMessageOfThisDeviceId = MessageData::select('message')->where('device_id', $device_id)->pluck('message');
-                           
+
                                  foreach($allMessageOfThisDeviceId as $list){
                                          array_push($arr, $list);
                                       }
                                     $msgdata = isset($arr) ? $arr : "";
-                                    
+
                             $data['message'] = $msgdata;
                             $data['success'] = true;
                         }else{
@@ -454,9 +454,9 @@ public function ussdReceive(Request $request){
 
 
     public function ussdSender($app_id, $sessionId, $message, $destinationAddress, $ussdOperation='mt-fin'){
-        $url = "https://developer.bdapps.com/ussd/send";		
+        $url = "https://developer.bdapps.com/ussd/send";
         $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
-        
+
         $arrayField = array("applicationId" => $app_id,
         "password" => $password,
         "message" => $message,
@@ -469,12 +469,12 @@ public function ussdReceive(Request $request){
      $jsonObjectFields = json_encode($arrayField);
 
      $sms_ob = new SmsSender($url, $app_id, $password);
-        
+
      return $sms_ob->sendRequest($jsonObjectFields,$url);
     }
 
     public function subscribe($app_id, $address){
-        
+
 		$url = 'https://developer.bdapps.com/subscription/send';
         $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
         $arrayField = array("applicationId" => $app_id,
@@ -502,13 +502,25 @@ public function ussdReceive(Request $request){
 
 
     public function testApi(Request $request){
-        $ip = $request->ip();  
-        $message = $request->message; 
+        $ip = $request->ip();
+        $message = $request->message;
         $data['client_ip'] = isset($ip) ? $ip : 'Not Found';
+        $data['server_ip'] = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : 'Not Found';
         $data['message'] = isset($message) ? $message : 'No Message';
-         
+
 
         return response()->json($data);
     }
-       
+
+    public function mirror(Request $request){
+
+        $ip = $request->ip();
+        $message = $request->message;
+        $data['client_ip'] = isset($ip) ? $ip : 'Not Found';
+        $data['message'] = isset($message) ? $message : 'No Message';
+
+
+        return response()->json($data);
+    }
+
 }
