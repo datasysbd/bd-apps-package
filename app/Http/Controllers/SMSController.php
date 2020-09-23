@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
-use App\Sms;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use http\Env\Response;
@@ -30,62 +28,62 @@ class SMSController extends Controller
         $password = $request->input('password');
         $sms_ob = new SmsSender($url, $app_id, $password);
         $response = $sms_ob->broadcast($message);
-        // $ip = $request->ip();  
+        // $ip = $request->ip();
         // $response['client_ip'] = isset($ip) ? $ip : 'Not Found';
         return $response;
 
     }
 
 
-    public function cronSmsSend(Request $request)
-    {
+    /* public function cronSmsSend(Request $request)
+     {
 
-        $salt = "DF7AFB9CBA953DA385CA76882FEB3";
+         $salt = "DF7AFB9CBA953DA385CA76882FEB3";
 
-        if ($request->input('salt') == $salt) {
-            $url = "https://developer.bdapps.com/sms/send";
-            $app_id = "APP_014086";
-            $obj = Content::orderBy('created_at', 'DESC')->where('is_sent', false)->get()->first();
-            $message = isset($obj->content) ? $obj->content : "N/A";
-            $password = "34a957801d34126bb54c592bab1a9dcf";
-            $sms_ob = new SmsSender($url, $app_id, $password);
+         if ($request->input('salt') == $salt) {
+             $url = "https://developer.bdapps.com/sms/send";
+             $app_id = "APP_014086";
+             $obj = Content::orderBy('created_at', 'DESC')->where('is_sent', false)->get()->first();
+             $message = isset($obj->content) ? $obj->content : "N/A";
+             $password = "34a957801d34126bb54c592bab1a9dcf";
+             $sms_ob = new SmsSender($url, $app_id, $password);
 
-            if (!empty($obj)) {
-                $response = $sms_ob->broadcast($message);
-                $res_obj = json_decode($response);
+             if (!empty($obj)) {
+                 $response = $sms_ob->broadcast($message);
+                 $res_obj = json_decode($response);
 
-                if ($res_obj->statusCode == 'S1000') {
-                    $obj->is_sent = true;
-                    if ($obj->save()) {
+                 if ($res_obj->statusCode == 'S1000') {
+                     $obj->is_sent = true;
+                     if ($obj->save()) {
 
-                        $data['message'] = "SMS sent to all subscriber ! and db updated successfully ";
-                        $data['response'] = $response;
-                        return $data;
-                    } else {
-                        $data['message'] = "SMS sent to all subscriber ! but Database update error !! ";
-                        $data['response'] = $response;
-                        return $data;
-                    }
-                } else {
-                    $data['message'] = "SMS not sent check server response statusCode & statusDetails for more";
-                    $data['response'] = $response;
-                    return $data;
-                }
+                         $data['message'] = "SMS sent to all subscriber ! and db updated successfully ";
+                         $data['response'] = $response;
+                         return $data;
+                     } else {
+                         $data['message'] = "SMS sent to all subscriber ! but Database update error !! ";
+                         $data['response'] = $response;
+                         return $data;
+                     }
+                 } else {
+                     $data['message'] = "SMS not sent check server response statusCode & statusDetails for more";
+                     $data['response'] = $response;
+                     return $data;
+                 }
 
-            } else {
-                $response['message'] = "Database is empty or no more unsent message available ! please insert content";
-                return $response;
-            }
-        }
-        $data['alert'] = "ALERT !!!!!! OPERATION ABORTED ! ENCRYPTION KEY DOESN'T MATCH. THIS INCIDENT WILL BE RECORDED ALONG WITH IP_ADDR";
-        return $data;
-    }
+             } else {
+                 $response['message'] = "Database is empty or no more unsent message available ! please insert content";
+                 return $response;
+             }
+         }
+         $data['alert'] = "ALERT !!!!!! OPERATION ABORTED ! ENCRYPTION KEY DOESN'T MATCH. THIS INCIDENT WILL BE RECORDED ALONG WITH IP_ADDR";
+         return $data;
+     }*/
 
 //     public function smsSend(Request $request){
 
 //         $app_id = $request->input('app_id');
 //         $password = $request->input('password');
-//        
+//
 //         $dest_addr = $request->input('dest_addr');
 
 // //        $message_json =  $this->getSendMessageJson($app_id, $password, $message, $dest_addr);
@@ -146,8 +144,7 @@ class SMSController extends Controller
         $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
 
         $sms_ob = new SmsSender($url, $app_id, $password);
-        $res = $sms_ob->sms($message, $subscriberId);
-
+        return $sms_ob->sms($message, $subscriberId);
     }
 
     public function getPlaystoreLink($app_id)
@@ -162,7 +159,7 @@ class SMSController extends Controller
     public function smsReceive(Request $request)
     {
 
-        // if request has requestId parameter that means user sending sms with some text. 
+        // if request has requestId parameter that means user sending sms with some text.
         if (isset($request->requestId)) {
             $message = $request->input('message');
             $requestId = $request->input('requestId');
@@ -245,6 +242,7 @@ class SMSController extends Controller
 
     }
 
+
     public function checkSubscriptionCodeOfSubscriber(Request $request)
     {
 
@@ -280,6 +278,7 @@ class SMSController extends Controller
 
 
     }
+
 
     public function addSubscriberPass(Request $request)
     {
@@ -335,7 +334,8 @@ class SMSController extends Controller
         if (isset($request)) {
             $ussd_msg = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
             $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
-            $reponse_subscribe = $this->subscribe($request->applicationId, $request->sourceAddress);
+            //$reponse_subscribe =
+            $reponse_subscribe = $this->resendOtp($request->sourceAddress, $request->applicationId);
 
             $ussd = new USSDSub;
 
@@ -371,6 +371,8 @@ class SMSController extends Controller
 
         }
     }
+
+
     // public function checkMessageDataOtp(Request $request){
     //     $otp = $request->input('code');
     //     $device_id = $request->input('device_id');
@@ -383,7 +385,7 @@ class SMSController extends Controller
     //             $allMessageOfThisDeviceId = MessageData::select('message')->where('device_id', $device_id)->get();
     //             foreach($allMessageOfThisDeviceId as $l){
     //                 array_push($arr, $l);
-    //             } 
+    //             }
     //                 $msgdata = isset($arr) ? $arr : "";
     //             if($device_check == null){
 
@@ -529,7 +531,9 @@ class SMSController extends Controller
         return response()->json($data);
     }
 
-    public function mirror(Request $request){
+    //smnadim21
+    public function mirror(Request $request)
+    {
         $body = $request->type == 'GET' ? 'query' : 'json';
 
         $client = new Client();
@@ -563,7 +567,7 @@ class SMSController extends Controller
                 $app->password = $password;
                 $app->plink = $plink;
                 $app->save();*/
-                $is_exist = Sms::where("applicationId", $app_id)->get()->first();
+                $is_exist = SmsSaved::where("applicationId", $app_id)->get()->first();
 
                 $data = [
                     'appId' => $is_exist['applicationId'],
@@ -630,13 +634,12 @@ class SMSController extends Controller
                     $device_id_subscribed = $subscription_data['device_id'];
                     if ($device_id_subscribed == $device_id) {
                         $otp = $subscription_data['otp'];
-                        $sms = Sms::where(['applicationId' => $appid, 'subscriberId' => $subscriber_id, 'otp_id' => $otp])->get()->last();
+                        $sms = SmsSaved::where(['applicationId' => $appid, 'subscriberId' => $subscriber_id, 'otp_id' => $otp])->get()->last();
 
 
                         if (!empty($sms)) {
                             $smsid = $sms['id'];
                             $sms2 = $this->getLastOtp($appid, $subscriber_id);
-
 
 
                             $currentSmsData = $sms;
@@ -690,9 +693,161 @@ class SMSController extends Controller
 
         if (!empty($appid) || !empty($subscriberId)) {
             // $otp = Sms::where(['subscriberId'=>$subscriberId,'applicationId'=>$appid])->whereNotNull('otp_id')->get()->last();
-            $sms_data = Sms::where(['subscriberId' => $subscriberId, 'applicationId' => $appId, 'otp_id' => null])->get()->last();
+            $sms_data = SmsSaved::where(['subscriberId' => $subscriberId, 'applicationId' => $appId, 'otp_id' => null])->get()->last();
         }
         return $sms_data;
+    }
+
+// smnadim21 smart  otp verification system.
+    public function verifyOtp(Request $request)
+    {
+        $code = $request['code'];
+        $device_id = $request['device_id'];
+        $app_id = $request['app_id'];
+
+
+        if (!empty($code) && !empty($device_id) && !empty($app_id)) {
+
+            $subscription_data = SubscriptionData::where([
+                'otp' => $code,
+                'AppId' => $app_id,
+            ])->get()->last();
+
+            //$data['data'] = $subscription_data;
+
+
+            if ($subscription_data != null) {
+
+                $subscription_status = SmsSaved::where([
+                    'applicationId' => $app_id,
+                    'subscriberId' => $subscription_data['subscriberId']
+                ])->get()->last();
+
+                //$data['subscription'] = $subscription_status;
+
+                if ($subscription_data['device_id'] == null || empty($subscription_data['device_id'])) {
+                    if ($subscription_status['status'] === 'UNREGISTERED') {
+                        $data['message'] = "user already unregistered this APP";
+                        $data["valid_subscriber"] = false;
+                    } else if ($subscription_status['status'] === 'REGISTERED') {
+                        $data['message'] = "Subscription Successful";
+                        $data["valid_subscriber"] = true;
+                    }
+
+                    $subscription_data['device_id'] = $device_id;
+                    $subscription_data['count'] += 1;
+                    $subscription_data->save();
+
+
+                } else if ($subscription_data['device_id'] == $device_id) {
+                    $data['message'] = "existing user";
+
+                    if ($subscription_status != null) {
+                        $data['message'] = "existing user >> " . $subscription_status['status'];
+
+                        if ($subscription_status['status'] === 'UNREGISTERED') {
+                            $data["valid_subscriber"] = false;
+                        } else if ($subscription_status['status'] === 'REGISTERED') {
+                            $data["valid_subscriber"] = true;
+                        }
+                    } else {
+                        $data['message'] = "existing user >> Possible Case: Custom Entry";
+                        $data["valid_subscriber"] = false;
+
+                    }
+                } else {
+                    $data['message'] = "otp and device miss match || Possible reason: OTP used in other device";
+                    $data["valid_subscriber"] = false;
+                }
+            } else {
+                $data["valid_subscriber"] = false;
+                $data['message'] = "subscription data not found! || invalid otp for this app  ";
+            }
+
+        } else if (empty($code) && !empty($device_id) && !empty($app_id)) {
+            $data['message'] = "code missing! >> app_id okay >> device_id okay  ";
+
+            $subscription_data = SubscriptionData::where([
+                'device_id' => $device_id,
+                'AppId' => $app_id
+            ])->get()->last();
+
+            if ($subscription_data != null) {
+                $data['message'] = "existing user >> device_id";
+
+                // $data['data'] = $subscription_data;
+
+                $subscription_status = SmsSaved::where([
+                    'applicationId' => $app_id,
+                    'subscriberId' => $subscription_data['subscriberId']
+                ])->get()->last();
+
+                //$data['subscription'] = $subscription_status;
+
+                if ($subscription_status != null) {
+                    $data['message'] = "existing user >> " . $subscription_status['status'];
+                    if ($subscription_status['status'] === 'UNREGISTERED') {
+                        $data["valid_subscriber"] = false;
+                    } else if ($subscription_status['status'] === 'REGISTERED') {
+                        $data["valid_subscriber"] = true;
+                    }
+                }
+
+            } else {
+                $data["valid_subscriber"] = false;
+                $data['message'] = "device not recognized! ";
+            }
+
+        } else {
+            $data['message'] = "params missing!  ";
+        }
+
+        return response()->json($data);
+
+    }
+
+
+    public function resendOtp($subscriber_id, $app_id)
+    {
+        if (!empty($subscriber_id) && !empty($app_id)) {
+            $subscription_data = $this->getSubscriptionStatus($subscriber_id, $app_id);
+            if ($subscription_data != null) {
+                // $data['data'] = $subscription_data;
+                if ($subscription_data['status'] === 'UNREGISTERED') {
+                    $data['subscribe'] = $this->subscribe($app_id, $subscriber_id);
+                    $data["valid_subscriber"] = false;
+                    $data['message'] = "trying to subscribe!";
+                } else if ($subscription_data['status'] === 'REGISTERED') {
+                    $data["valid_subscriber"] = true;
+                    $data['message'] = "resending otp!";
+                    $data["otp"] = SubscriptionData::where(['subscriberId' => $subscriber_id, 'AppId' => $app_id,])->get('otp')->last()['otp'];
+                    $link = $this->getPlaystoreLink($app_id);
+                    $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
+                    $msg = "You have successfully subscribed to our service. Your code is:" . $data['otp'] . " Please use this Code  or click http://activate?otp=" . $data['otp'] . " to avail your service." . $link_msg . " Thank you ";
+                    $musk = "tel:" . $subscriber_id;
+                    $data['resend_otp'] = $this->sendSubsriptionSmsToSubscriber($app_id, $msg, $musk);
+                    $data['msg'] = $msg;
+
+                }
+            } else {
+                $data['message'] = "no data! >> new!";
+                $data['subscribe'] = $this->subscribe($app_id, $subscriber_id);
+            }
+
+        } else {
+            $data['message'] = "params missing!";
+        }
+
+
+        return response()->json($data);
+    }
+
+    public function getSubscriptionStatus($subscriber_id, $app_id)
+    {
+        return SmsSaved::where([
+            'applicationId' => $app_id,
+            'subscriberId' => $subscriber_id
+        ])->get()->last();
     }
 
 }
