@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSubscriptionDataTable extends Migration
+class AddDeviceIdToCaasTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,9 @@ class CreateSubscriptionDataTable extends Migration
      */
     public function up()
     {
-        Schema::create('subscription_data', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('AppId')->nullable();
-            $table->string('subscriberId')->nullable();
-            $table->string('otp')->nullable();
+        Schema::table('caas', function (Blueprint $table) {
             $table->string('device_id')->nullable();
-            $table->timestamps();
+            //
         });
     }
 
@@ -30,6 +26,8 @@ class CreateSubscriptionDataTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sms_request');
+        Schema::table('caas', function (Blueprint $table) {
+            //
+        });
     }
 }

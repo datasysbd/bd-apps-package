@@ -38,4 +38,6 @@ Route::post('checkStatus', 'SMSController@checkStatus');
 //smnadim21
 Route::post('mirror', 'SMSController@mirror');
 Route::post('verify_otp', 'SMSController@verifyOtp');
+Route::post('caas', 'CaasController@requestCAAS');
+//Route::post('testf', 'SMSController@testf');
 

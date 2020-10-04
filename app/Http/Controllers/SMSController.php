@@ -378,7 +378,7 @@ class SMSController extends Controller
         }
 
 
-        return response()->json($data);
+        // return response()->json($data);
     }
 
 
@@ -707,7 +707,7 @@ class SMSController extends Controller
         return $sms_data;
     }
 
-// smnadim21 smart  otp verification system.
+    // smnadim21 smart  otp verification system.
     public function verifyOtp(Request $request)
     {
         $code = $request['code'];
@@ -826,7 +826,7 @@ class SMSController extends Controller
 
     }
 
-
+    // smnadim21 resend otp if already subscribed
     public function resendOtp($subscriber_id, $app_id)
     {
         $data['message'] = "empty response!";
@@ -909,6 +909,7 @@ class SMSController extends Controller
         return $data;
     }
 
+    //smnadim21  check if user is subscribed  using  $subscriber_id
     public function getSubscriptionStatus($subscriber_id, $app_id)
     {
         return SmsSaved::where('applicationId', $app_id)
@@ -916,12 +917,13 @@ class SMSController extends Controller
             ->get()->last();
     }
 
+    //smnadim21 refine $subscriber_id with "tel:" prefix .....
     public function refineSubscriberId($subscriber_id)
     {
         return $this->has_prefix($subscriber_id, "tel:") ? $subscriber_id : "tel:" . $subscriber_id;
     }
 
-
+    //smnadim21 remove "tel:" prefix from $subscriber_id
     public function removeSubscriberIdHead($subscriber_id)
     {
         $head = "tel:";
@@ -930,6 +932,7 @@ class SMSController extends Controller
             : $subscriber_id;
     }
 
+    //smnadim21 if string has a $prefix
     function has_prefix($string, $prefix)
     {
         return substr($string, 0, strlen($prefix)) == $prefix;

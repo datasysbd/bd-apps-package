@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSubscriptionDataTable extends Migration
+class CreateCaasTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,15 @@ class CreateSubscriptionDataTable extends Migration
      */
     public function up()
     {
-        Schema::create('subscription_data', function (Blueprint $table) {
+        Schema::create('caas', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('AppId')->nullable();
+            $table->string('applicationId')->nullable();
             $table->string('subscriberId')->nullable();
-            $table->string('otp')->nullable();
-            $table->string('device_id')->nullable();
+            $table->string('amount')->nullable();
+            $table->string('externalTrxId')->nullable();
+            $table->string('internalTrxId')->nullable();
+            $table->string('statusCode')->nullable();
+            $table->string('statusDetail')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +33,6 @@ class CreateSubscriptionDataTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sms_request');
+        Schema::dropIfExists('caas');
     }
 }
