@@ -864,9 +864,9 @@ class SMSController extends Controller
                         $sms->version = isset($sub_response['version']) ? $sub_response['version'] : "";
                         $sms->applicationId = isset($app_id) ? $app_id : "";
                         $sms->subscriberId = isset($subscriber_id) ? $this->refineSubscriberId($subscriber_id) : "";
-                        $sms->status = isset($status) ? $status : "";
+                        $sms->status = isset($sub_response['subscriptionStatus']) ? $sub_response['subscriptionStatus'] : "";
                         $sms->otp_id = $otp;
-                        $sms->frequency = isset($frequency) ? $frequency : "";
+                        $sms->frequency = isset($frequency) ? $frequency : "mannual";
                         $sms->timeStamp = isset($timeStamp) ? $timeStamp : "";
 
 
