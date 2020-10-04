@@ -17,6 +17,9 @@ Route::get('/', function () {
 // Route::get('/home', function () {
 //     return redirect('/');
 // });
+Route::get('/ip/get', 'PublicController@ip_get')->name('ip_get');
+Route::get('/ip/test', 'PublicController@ip_test')->name('ip_test');
+
 
 Auth::routes();
 Route::get('/download', 'SubscriberController@subscribe')->name('subscribe');
