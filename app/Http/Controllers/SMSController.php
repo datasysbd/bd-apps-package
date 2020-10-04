@@ -330,17 +330,21 @@ class SMSController extends Controller
 
     public function ussdReceive(Request $request)
     {
-
+        $data['message'] = 'empty';
         if (isset($request)) {
             $ussd_msg = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
-            $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
+
             //$reponse_subscribe =
+            // $data['ussd'] = response()->json($reponse_ussd);
             $reponse_subscribe = $this->resendOtp($request->sourceAddress, $request->applicationId);
+            $ussd_msg = $reponse_subscribe['message_ussd'];
+            $data['ussd_msg'] = $ussd_msg;
+            $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
+            // $data['subscribe'] = $reponse_subscribe;
 
             $ussd = new USSDSub;
 
             $ussd->message = isset($request->message) ? $request->message : '';
-            $ussd->ussdOperation = isset($request->ussdOperation) ? $request->ussdOperation : '';
             $ussd->requestId = isset($request->requestId) ? $request->requestId : '';
             $ussd->sessionId = isset($request->sessionId) ? $request->sessionId : '';
             $ussd->encoding = isset($request->encoding) ? $request->encoding : '';
@@ -370,6 +374,9 @@ class SMSController extends Controller
 
 
         }
+
+
+        return response()->json($data);
     }
 
 
@@ -733,7 +740,8 @@ class SMSController extends Controller
                     } else if ($subscription_status['status'] === 'REGISTERED') {
                         $data['message'] = "Subscription Successful";
                         $data["valid_subscriber"] = true;
-                        $data["existing_subscriber"] = false;                    }
+                        $data["existing_subscriber"] = false;
+                    }
 
                     $subscription_data['device_id'] = $device_id;
                     $subscription_data['count'] += 1;
@@ -815,6 +823,7 @@ class SMSController extends Controller
 
     public function resendOtp($subscriber_id, $app_id)
     {
+        $data['message'] = "empty response!";
         if (!empty($subscriber_id) && !empty($app_id)) {
             $subscription_data = $this->getSubscriptionStatus($subscriber_id, $app_id);
             if ($subscription_data != null) {
@@ -823,9 +832,11 @@ class SMSController extends Controller
                     $data['subscribe'] = $this->subscribe($app_id, $subscriber_id);
                     $data["valid_subscriber"] = false;
                     $data['message'] = "trying to subscribe!";
+                    $data['message_ussd'] = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
                 } else if ($subscription_data['status'] === 'REGISTERED') {
                     $data["valid_subscriber"] = true;
                     $data['message'] = "resending otp!";
+                    $data['message_ussd'] = 'you are already subscribed! resending your OTP';
                     $data["otp"] = SubscriptionData::where(['subscriberId' => $subscriber_id, 'AppId' => $app_id,])->get('otp')->last()['otp'];
                     $link = $this->getPlaystoreLink($app_id);
                     $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
@@ -837,6 +848,7 @@ class SMSController extends Controller
                 }
             } else {
                 $data['message'] = "no data! >> new!";
+                $data['message_ussd'] = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
                 $data['subscribe'] = $this->subscribe($app_id, $subscriber_id);
             }
 
@@ -845,7 +857,7 @@ class SMSController extends Controller
         }
 
 
-        return response()->json($data);
+        return $data;
     }
 
     public function getSubscriptionStatus($subscriber_id, $app_id)
