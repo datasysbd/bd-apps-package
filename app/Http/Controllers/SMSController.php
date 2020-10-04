@@ -834,7 +834,7 @@ class SMSController extends Controller
             if ($subscription_data != null) {
                 // $data['data'] = $subscription_data;
                 if ($subscription_data['status'] === 'UNREGISTERED') {
-                    $data['subscribe'] = $this->subscribe($app_id, $subscriber_id);
+                    $data['subscribe'] = json_decode($this->subscribe($app_id, $subscriber_id));
                     $data["valid_subscriber"] = false;
                     $data['message'] = "trying to subscribe!";
                     $data['message_ussd'] = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
@@ -846,7 +846,7 @@ class SMSController extends Controller
                     $link = $this->getPlaystoreLink($app_id);
                     $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
                     $msg = "You have successfully subscribed to our service. Your code is:" . $data['otp'] . " Please use this Code  or open http://activate?otp=" . $data['otp'] . " with your APP to avail your service." . $link_msg . " Thank you ";
-                    $musk = "tel:" . $subscriber_id;
+                    $musk = $this->refineSubscriberId($subscriber_id);
                     $data['resend_otp'] = $this->sendSubsriptionSmsToSubscriber($app_id, $msg, $musk);
                     $data['msg'] = $msg;
 
@@ -893,9 +893,9 @@ class SMSController extends Controller
 
 
     //api for testing perpouse
-  /*  function testf(Request $request)
-    {
-        return $this->removeSubscriberIdHead($request->str);
-    }*/
+    /*  function testf(Request $request)
+      {
+          return $this->removeSubscriberIdHead($request->str);
+      }*/
 
 }
