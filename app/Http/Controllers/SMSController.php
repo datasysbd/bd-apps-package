@@ -764,7 +764,7 @@ class SMSController extends Controller
                 }
             } else {
                 $data["valid_subscriber"] = false;
-                $data["existing_subscriber"] = git ;
+                $data["existing_subscriber"] = false;
                 $data['message'] = "subscription data not found! || invalid otp for this app  ";
             }
 
