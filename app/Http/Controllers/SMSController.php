@@ -196,7 +196,7 @@ class SMSController extends Controller
 
             $version = $request->input('version');
             $applicationId = $request->input('applicationId');
-            $subscriberId = $request->input('subscriberId');
+            $subscriberId = $this->refineSubscriberId($request->input('subscriberId'));
             $status = $request->input('status');
             $otp = null;
             $frequency = $request->input('frequency');
@@ -205,7 +205,7 @@ class SMSController extends Controller
             if ($status == "REGISTERED") {
                 $subData = new SubscriptionData();
                 $subData->appId = $applicationId;
-                $subData->subscriberId = $subscriberId;
+                $subData->subscriberId = $this->refineSubscriberId($subscriberId);
                 $otp = $this->generateRandomString(6);
                 $subData->otp = $otp;
 
@@ -214,8 +214,9 @@ class SMSController extends Controller
                     $link = $this->getPlaystoreLink($applicationId);
                     $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
                     $msg = "You have successfully subscribed to our service. Your code is:" . $otp . " Please use this Code to avail your service." . $link_msg . " Thank you ";
-                    $musk = "tel:" . $subscriberId;
-                    $this->sendSubsriptionSmsToSubscriber($applicationId, $msg, $musk);
+                    $musk = $this->refineSubscriberId($subscriberId);
+                    $data['msg'] = $msg;
+                    $data['response'] = $this->sendSubsriptionSmsToSubscriber($applicationId, $msg, $musk);
                 }
 
             }
@@ -225,7 +226,7 @@ class SMSController extends Controller
 
             $sms->version = isset($version) ? $version : "";
             $sms->applicationId = isset($applicationId) ? $applicationId : "";
-            $sms->subscriberId = isset($subscriberId) ? $subscriberId : "";
+            $sms->subscriberId = isset($subscriberId) ? $this->refineSubscriberId($subscriberId) : "";
             $sms->status = isset($status) ? $status : "";
             $sms->otp_id = $otp;
             $sms->frequency = isset($frequency) ? $frequency : "";
@@ -336,10 +337,10 @@ class SMSController extends Controller
 
             //$reponse_subscribe =
             // $data['ussd'] = response()->json($reponse_ussd);
-            $reponse_subscribe = $this->resendOtp($request->sourceAddress, $request->applicationId);
+            $reponse_subscribe = $this->resendOtp($this->refineSubscriberId($request->sourceAddress), $request->applicationId);
             $ussd_msg = $reponse_subscribe['message_ussd'];
             $data['ussd_msg'] = $ussd_msg;
-            $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $request->sourceAddress);
+            $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $this->refineSubscriberId($request->sourceAddress));
             // $data['subscribe'] = $reponse_subscribe;
 
             $ussd = new USSDSub;
@@ -349,21 +350,21 @@ class SMSController extends Controller
             $ussd->sessionId = isset($request->sessionId) ? $request->sessionId : '';
             $ussd->encoding = isset($request->encoding) ? $request->encoding : '';
             $ussd->AppId = isset($request->applicationId) ? $request->applicationId : '';
-            $ussd->subscriberId = isset($request->sourceAddress) ? $request->sourceAddress : '';
+            $ussd->subscriberId = isset($request->sourceAddress) ? $this->refineSubscriberId($request->sourceAddress) : '';
             $ussd->version = isset($request->version) ? $request->version : '';
 
             if ($ussd->save()) {
 
                 $subData = new SubscriptionData();
                 $subData->appId = $request->applicationId;
-                $subData->subscriberId = $request->sourceAddress;
+                $subData->subscriberId = $this->refineSubscriberId($request->sourceAddress);
                 $otp = $this->generateRandomString(6);
                 $subData->otp = $otp;
 
                 // $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service. Thank you ";
                 // $this->sendSubsriptionSmsToSubscriber($request->applicationId, $msg, $request->sourceAddress);
                 $data['sucess'] = true;
-                $data['ussd_resp'] = isset($reponse_ussd) ? $reponse_ussd : 'No response from';
+                $data['ussd_resp'] = isset($reponse_ussd) ? json_decode($reponse_ussd) : 'No response from';
                 $data['subs_resp'] = isset($reponse_subscribe) ? $reponse_subscribe : 'No response from';
                 $data['message'] = "Data Saved";
                 $subData->save();
@@ -725,10 +726,12 @@ class SMSController extends Controller
 
             if ($subscription_data != null) {
 
-                $subscription_status = SmsSaved::where([
+                $subscription_status = $this->getSubscriptionStatus($subscription_data['subscriberId'], $app_id);
+
+                /*SmsSaved::where([
                     'applicationId' => $app_id,
                     'subscriberId' => $subscription_data['subscriberId']
-                ])->get()->last();
+                ])->get()->last();*/
 
                 //$data['subscription'] = $subscription_status;
 
@@ -790,10 +793,12 @@ class SMSController extends Controller
 
                 // $data['data'] = $subscription_data;
 
-                $subscription_status = SmsSaved::where([
+                $subscription_status = $this->getSubscriptionStatus($subscription_data['subscriberId'], $app_id);
+
+                /*SmsSaved::where([
                     'applicationId' => $app_id,
                     'subscriberId' => $subscription_data['subscriberId']
-                ])->get()->last();
+                ])->get()->last();*/
 
                 //$data['subscription'] = $subscription_status;
 
@@ -862,10 +867,35 @@ class SMSController extends Controller
 
     public function getSubscriptionStatus($subscriber_id, $app_id)
     {
-        return SmsSaved::where([
-            'applicationId' => $app_id,
-            'subscriberId' => $subscriber_id
-        ])->get()->last();
+        return SmsSaved::where('applicationId', $app_id)
+            ->where('subscriberId', 'like', '%' . $this->removeSubscriberIdHead($subscriber_id) . "%")
+            ->get()->last();
     }
+
+    public function refineSubscriberId($subscriber_id)
+    {
+        return $this->has_prefix($subscriber_id, "tel:") ? $subscriber_id : "tel:" . $subscriber_id;
+    }
+
+
+    public function removeSubscriberIdHead($subscriber_id)
+    {
+        $head = "tel:";
+        return $this->has_prefix($subscriber_id, $head)
+            ? substr($subscriber_id, strlen($head), strlen($subscriber_id))
+            : $subscriber_id;
+    }
+
+    function has_prefix($string, $prefix)
+    {
+        return substr($string, 0, strlen($prefix)) == $prefix;
+    }
+
+
+    //api for testing perpouse
+  /*  function testf(Request $request)
+    {
+        return $this->removeSubscriberIdHead($request->str);
+    }*/
 
 }
