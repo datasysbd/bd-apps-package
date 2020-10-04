@@ -355,11 +355,12 @@ class SMSController extends Controller
 
             if ($ussd->save()) {
 
-                $subData = new SubscriptionData();
+             /*   $subData = new SubscriptionData();
                 $subData->appId = $request->applicationId;
                 $subData->subscriberId = $this->refineSubscriberId($request->sourceAddress);
                 $otp = $this->generateRandomString(6);
                 $subData->otp = $otp;
+                $subData->save();*/
 
                 // $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service. Thank you ";
                 // $this->sendSubsriptionSmsToSubscriber($request->applicationId, $msg, $request->sourceAddress);
@@ -367,7 +368,7 @@ class SMSController extends Controller
                 $data['ussd_resp'] = isset($reponse_ussd) ? json_decode($reponse_ussd) : 'No response from';
                 $data['subs_resp'] = isset($reponse_subscribe) ? $reponse_subscribe : 'No response from';
                 $data['message'] = "Data Saved";
-                $subData->save();
+
             } else {
                 $data['sucess'] = false;
                 $data['message'] = "Messaeg Data saving error.";
