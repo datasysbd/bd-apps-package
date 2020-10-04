@@ -729,10 +729,11 @@ class SMSController extends Controller
                     if ($subscription_status['status'] === 'UNREGISTERED') {
                         $data['message'] = "user already unregistered this APP";
                         $data["valid_subscriber"] = false;
+                        $data["existing_subscriber"] = true;
                     } else if ($subscription_status['status'] === 'REGISTERED') {
                         $data['message'] = "Subscription Successful";
                         $data["valid_subscriber"] = true;
-                    }
+                        $data["existing_subscriber"] = false;                    }
 
                     $subscription_data['device_id'] = $device_id;
                     $subscription_data['count'] += 1;
@@ -741,7 +742,7 @@ class SMSController extends Controller
 
                 } else if ($subscription_data['device_id'] == $device_id) {
                     $data['message'] = "existing user";
-
+                    $data["existing_subscriber"] = true;
                     if ($subscription_status != null) {
                         $data['message'] = "existing user >> " . $subscription_status['status'];
 
@@ -753,14 +754,17 @@ class SMSController extends Controller
                     } else {
                         $data['message'] = "existing user >> Possible Case: Custom Entry";
                         $data["valid_subscriber"] = false;
+                        $data["existing_subscriber"] = false;
 
                     }
                 } else {
                     $data['message'] = "otp and device miss match || Possible reason: OTP used in other device";
                     $data["valid_subscriber"] = false;
+                    $data["existing_subscriber"] = false;
                 }
             } else {
                 $data["valid_subscriber"] = false;
+                $data["existing_subscriber"] = git ;
                 $data['message'] = "subscription data not found! || invalid otp for this app  ";
             }
 
@@ -773,6 +777,7 @@ class SMSController extends Controller
             ])->get()->last();
 
             if ($subscription_data != null) {
+                $data["existing_subscriber"] = true;
                 $data['message'] = "existing user >> device_id";
 
                 // $data['data'] = $subscription_data;
@@ -795,6 +800,7 @@ class SMSController extends Controller
 
             } else {
                 $data["valid_subscriber"] = false;
+                $data["existing_subscriber"] = false;
                 $data['message'] = "device not recognized! ";
             }
 
@@ -823,7 +829,7 @@ class SMSController extends Controller
                     $data["otp"] = SubscriptionData::where(['subscriberId' => $subscriber_id, 'AppId' => $app_id,])->get('otp')->last()['otp'];
                     $link = $this->getPlaystoreLink($app_id);
                     $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
-                    $msg = "You have successfully subscribed to our service. Your code is:" . $data['otp'] . " Please use this Code  or click http://activate?otp=" . $data['otp'] . " to avail your service." . $link_msg . " Thank you ";
+                    $msg = "You have successfully subscribed to our service. Your code is:" . $data['otp'] . " Please use this Code  or open http://activate?otp=" . $data['otp'] . " with your APP to avail your service." . $link_msg . " Thank you ";
                     $musk = "tel:" . $subscriber_id;
                     $data['resend_otp'] = $this->sendSubsriptionSmsToSubscriber($app_id, $msg, $musk);
                     $data['msg'] = $msg;
