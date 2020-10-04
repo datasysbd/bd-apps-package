@@ -847,7 +847,7 @@ class SMSController extends Controller
                     $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
                     $msg = "You have successfully subscribed to our service. Your code is:" . $data['otp'] . " Please use this Code  or open http://activate?otp=" . $data['otp'] . " with your APP to avail your service." . $link_msg . " Thank you ";
                     $musk = $this->refineSubscriberId($subscriber_id);
-                    $data['resend_otp'] = $this->sendSubsriptionSmsToSubscriber($app_id, $msg, $musk);
+                    $data['resend_otp'] = json_decode($this->sendSubsriptionSmsToSubscriber($app_id, $msg, $musk));
                     $data['msg'] = $msg;
 
                 }
