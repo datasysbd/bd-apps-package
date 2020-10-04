@@ -355,12 +355,12 @@ class SMSController extends Controller
 
             if ($ussd->save()) {
 
-             /*   $subData = new SubscriptionData();
-                $subData->appId = $request->applicationId;
-                $subData->subscriberId = $this->refineSubscriberId($request->sourceAddress);
-                $otp = $this->generateRandomString(6);
-                $subData->otp = $otp;
-                $subData->save();*/
+                /*   $subData = new SubscriptionData();
+                   $subData->appId = $request->applicationId;
+                   $subData->subscriberId = $this->refineSubscriberId($request->sourceAddress);
+                   $otp = $this->generateRandomString(6);
+                   $subData->otp = $otp;
+                   $subData->save();*/
 
                 // $msg = "You have successfully subscribed to our service. Your code is:" . $otp ." Please use this Code to avail your service. Thank you ";
                 // $this->sendSubsriptionSmsToSubscriber($request->applicationId, $msg, $request->sourceAddress);
@@ -835,10 +835,53 @@ class SMSController extends Controller
             if ($subscription_data != null) {
                 // $data['data'] = $subscription_data;
                 if ($subscription_data['status'] === 'UNREGISTERED') {
-                    $data['subscribe'] = json_decode($this->subscribe($app_id, $subscriber_id));
-                    $data["valid_subscriber"] = false;
-                    $data['message'] = "trying to subscribe!";
-                    $data['message_ussd'] = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
+
+                    $sub_response = json_decode($this->subscribe($app_id, $subscriber_id), true);
+
+                    $data['subscribe'] = $sub_response;
+
+                    if (isset($sub_response['subscriptionStatus'])
+                        && $sub_response['subscriptionStatus'] == "REGISTERED") {
+                        $data["valid_subscriber"] = true;
+                        $data['message_ussd'] = 'you are already subscribed! resending your OTP';
+                        $subData = new SubscriptionData();
+                        $subData->appId = $app_id;
+                        $subData->subscriberId = $this->refineSubscriberId($subscriber_id);
+                        $otp = $this->generateRandomString(6);
+                        $subData->otp = $otp;
+
+                        if ($subData->save()) {
+                            $link_msg = isset($link) ? 'Download this app from: ' . $this->getPlaystoreLink($app_id) : "";
+                            $msg = "You have successfully subscribed to our service. Your code is:" . $otp . " Please use this Code to avail your service." . $link_msg . " Thank you ";
+                            $musk = $this->refineSubscriberId($subscriber_id);
+                            $data['msg'] = $msg;
+                            $data['resend_otp'] = json_decode($this->sendSubsriptionSmsToSubscriber($app_id, $msg, $musk));
+                        }
+
+
+                        $sms = new SmsSaved();
+
+                        $sms->version = isset($sub_response['version']) ? $sub_response['version'] : "";
+                        $sms->applicationId = isset($app_id) ? $app_id : "";
+                        $sms->subscriberId = isset($subscriber_id) ? $this->refineSubscriberId($subscriber_id) : "";
+                        $sms->status = isset($status) ? $status : "";
+                        $sms->otp_id = $otp;
+                        $sms->frequency = isset($frequency) ? $frequency : "";
+                        $sms->timeStamp = isset($timeStamp) ? $timeStamp : "";
+
+
+                        if ($sms->save()) {
+                            $data['sucess'] = true;
+                            $data['message'] = "already subscribed but otp generation failed! resending!";
+                        }
+
+                    } else {
+                        $data["valid_subscriber"] = false;
+                        $data['message'] = "trying to re-subscribe!";
+                        $data['message_ussd'] = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
+                    }
+
+
                 } else if ($subscription_data['status'] === 'REGISTERED') {
                     $data["valid_subscriber"] = true;
                     $data['message'] = "resending otp!";
@@ -855,7 +898,7 @@ class SMSController extends Controller
             } else {
                 $data['message'] = "no data! >> new!";
                 $data['message_ussd'] = 'Thanks for the request. Please wait until you got a pop up asking to confirm your your subscription.';
-                $data['subscribe'] = $this->subscribe($app_id, $subscriber_id);
+                $data['subscribe'] = json_decode($this->subscribe($app_id, $subscriber_id));
             }
 
         } else {
