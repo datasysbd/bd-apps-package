@@ -666,7 +666,9 @@ class SMSController extends Controller
                     $device_id_subscribed = $subscription_data['device_id'];
                     if ($device_id_subscribed == $device_id) {
                         $otp = $subscription_data['otp'];
-                        $sms = SmsSaved::where(['applicationId' => $appid, 'subscriberId' => $subscriber_id, 'otp_id' => $otp])->get()->last();
+                        $sms = SmsSaved::where(['applicationId' => $appid,
+                            'subscriberId' => $subscriber_id,
+                            'otp_id' => $otp])->get()->last();
 
 
                         if (!empty($sms)) {

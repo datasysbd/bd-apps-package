@@ -21,6 +21,7 @@ class CaasController extends Controller
         $item_code = $request['item_code'];
         $data['message'] = 'empty response';
         $data['payment_status'] = false;
+        $data['new_payment'] = false;
 
         if (!empty($amount) && !empty($device_id) && !empty($app_id) && !empty($item_code)) {
 
@@ -43,6 +44,7 @@ class CaasController extends Controller
                     if ($purchase_info['statusCode'] == "S1000") {
                         $data['message'] = 'item purchased already';
                         $data['payment_status'] = true;
+                        $data['new_payment'] = false;
                     } else {
                         $data['message'] = 're-trying to purchase';
                         $data['payment_status'] = false;
@@ -105,8 +107,6 @@ class CaasController extends Controller
             $data['http_code'] = $res->getStatusCode();
             $json_response = json_decode($response->getContents(), true);
 
-            var_dump($response->getContents());
-
             $data['data'] = $json_response;
             if ($json_response != null) {
                 $data['message'] = $res->getStatusCode() . " " . $res->getReasonPhrase() . " Request Successful";
@@ -117,9 +117,10 @@ class CaasController extends Controller
                     $caas->internalTrxId = $json_response['internalTrxId'];
                     $data['message'] = "Payment Successful";
                     $data['payment_status'] = true;
+                    $data['new_payment'] = true;
 
                     $sms_controller = new SMSController();
-                    $message = "TRXID." . $caas->internalTrxId . ". Payment Successful for Item " . $caas->externalTrxId . " Charging amount is  BDT" . $caas->amount . " + VAT + SD + SC. Thank you!";
+                    $message = "TRXID." . $caas->internalTrxId . ". Payment Successful for Item " . $caas->externalTrxId . " Charging amount is  BDT." . $caas->amount . " + VAT + SD + SC. Thank you!";
                     $sms_controller->sendSubsriptionSmsToSubscriber(
                         $caas->applicationId,
                         $message,
