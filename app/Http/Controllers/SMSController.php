@@ -236,7 +236,7 @@ class SMSController extends Controller
 
                     $link = $this->getPlaystoreLink($applicationId);
                     $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
-                    $msg = "You have successfully subscribed to our service. Your code is:" . $otp . " Please use this Code to avail your service." . $link_msg . " Thank you ";
+                    $msg = "You have successfully subscribed to our service. Your code is:" . $otp . " Please use this Code or open http://activate?otp=" . $otp. " with your APP to avail your service." . $link_msg . " Thank you ";
                     $musk = $this->refineSubscriberId($subscriberId);
                     $data['msg'] = $msg;
                     $data['response'] = $this->sendSubsriptionSmsToSubscriber($applicationId, $msg, $musk);
@@ -877,7 +877,7 @@ class SMSController extends Controller
 
                         if ($subData->save()) {
                             $link_msg = isset($link) ? 'Download this app from: ' . $this->getPlaystoreLink($app_id) : "";
-                            $msg = "You have successfully subscribed to our service. Your code is:" . $otp . " Please use this Code to avail your service." . $link_msg . " Thank you ";
+                            $msg = "You have successfully subscribed to our service. Your code is:" . $otp . " Please use this Code or open http://activate?otp=" . $otp . " with your APP to avail your service." . $link_msg . " Thank you ";
                             $musk = $this->refineSubscriberId($subscriber_id);
                             $data['msg'] = $msg;
                             $data['resend_otp'] = json_decode($this->sendSubsriptionSmsToSubscriber($app_id, $msg, $musk));
