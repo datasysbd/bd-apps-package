@@ -127,7 +127,7 @@ class CaasController extends Controller
                         $caas->subscriberId);
 
                 } else {
-                    $data['message'] = "Payment Failed!";
+                    $data['message'] = "Payment Failed! " . $caas->statusDetail;
                     $data['payment_status'] = false;
                 }
 
