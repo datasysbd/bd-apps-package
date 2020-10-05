@@ -39,5 +39,5 @@ Route::post('checkStatus', 'SMSController@checkStatus');
 Route::post('mirror', 'SMSController@mirror');
 Route::post('verify_otp', 'SMSController@verifyOtp');
 Route::post('caas', 'CaasController@requestCAAS');
-//Route::post('testf', 'SMSController@testf');
+Route::post('testf', 'SMSController@testf');
 

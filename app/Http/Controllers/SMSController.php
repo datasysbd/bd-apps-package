@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\SmsSentFromServer;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use http\Env\Response;
@@ -144,7 +145,29 @@ class SMSController extends Controller
         $password = AppPass::where('AppId', $app_id)->pluck('password')->first();
 
         $sms_ob = new SmsSender($url, $app_id, $password);
-        return $sms_ob->sms($message, $subscriberId);
+
+        $sms_to_send = new SmsSentFromServer();
+        $sms_to_send->smsBody = $message;
+        $sms_to_send->destinationAddresses = $subscriberId;
+        $sms_to_send->applicationId = $app_id;
+
+        $sms_response = $sms_ob->sms($message, $subscriberId);
+
+        $sms_response_array = json_decode($sms_response, true);
+
+
+        if ($sms_response_array != null) {
+            $sms_to_send->statusCode = $sms_response_array['statusCode'];
+            $sms_to_send->statusDetail = $sms_response_array['statusDetail'];
+            $sms_to_send->requestId = $sms_response_array['requestId'];
+            $destinationResponses = $sms_response_array['destinationResponses'];
+            if ($destinationResponses != null) {
+                $sms_to_send->timeStamp = $destinationResponses[0]['timeStamp'];
+            }
+        }
+        $sms_to_send->rew_response = $sms_response;
+        $sms_to_send->save();
+        return $sms_response;
     }
 
     public function getPlaystoreLink($app_id)
@@ -940,9 +963,9 @@ class SMSController extends Controller
 
 
     //api for testing perpouse
-    /*  function testf(Request $request)
-      {
-          return $this->removeSubscriberIdHead($request->str);
-      }*/
+    function testf(Request $request)
+    {
+        return $this->sendSubsriptionSmsToSubscriber($request->str, $request->str1, $request->str2);
+    }
 
 }
