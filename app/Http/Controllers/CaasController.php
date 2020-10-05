@@ -118,6 +118,13 @@ class CaasController extends Controller
                     $data['message'] = "Payment Successful";
                     $data['payment_status'] = true;
 
+                    $sms_controller = new SMSController();
+                    $message = "TRXID." . $caas->internalTrxId . ". Payment Successful for Item " . $caas->externalTrxId . " Charging amount is  BDT" . $caas->amount . " + VAT + SD + SC. Thank you!";
+                    $sms_controller->sendSubsriptionSmsToSubscriber(
+                        $caas->applicationId,
+                        $message,
+                        $caas->subscriberId);
+
                 } else {
                     $data['message'] = "Payment Failed!";
                     $data['payment_status'] = false;
