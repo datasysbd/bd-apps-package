@@ -236,7 +236,7 @@ class SMSController extends Controller
 
                     $link = $this->getPlaystoreLink($applicationId);
                     $link_msg = isset($link) ? 'Download this app from: ' . $link : "";
-                    $msg = "You have successfully subscribed to our service. Your code is:" . $otp . " Please use this Code or open http://activate?otp=" . $otp. " with your APP to avail your service." . $link_msg . " Thank you ";
+                    $msg = "You have successfully subscribed to our service. Your code is:" . $otp . " Please use this Code or open http://activate?otp=" . $otp . " with your APP to avail your service." . $link_msg . " Thank you ";
                     $musk = $this->refineSubscriberId($subscriberId);
                     $data['msg'] = $msg;
                     $data['response'] = $this->sendSubsriptionSmsToSubscriber($applicationId, $msg, $musk);
@@ -363,7 +363,7 @@ class SMSController extends Controller
             $reponse_subscribe = $this->resendOtp($this->refineSubscriberId($request->sourceAddress), $request->applicationId);
             $ussd_msg = $reponse_subscribe['message_ussd'];
             $data['ussd_msg'] = $ussd_msg;
-            $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $this->refineSubscriberId($request->sourceAddress));
+            $reponse_ussd = $this->ussdSender($request->applicationId, $request->sessionId, $ussd_msg, $this->refineSubscriberId($request->sourceAddress), 'mt-fin');
             // $data['subscribe'] = $reponse_subscribe;
 
             $ussd = new USSDSub;
@@ -373,6 +373,7 @@ class SMSController extends Controller
             $ussd->sessionId = isset($request->sessionId) ? $request->sessionId : '';
             $ussd->encoding = isset($request->encoding) ? $request->encoding : '';
             $ussd->AppId = isset($request->applicationId) ? $request->applicationId : '';
+            $ussd->ussdOperation = isset($request->ussdOperation) ? $request->ussdOperation : '';
             $ussd->subscriberId = isset($request->sourceAddress) ? $this->refineSubscriberId($request->sourceAddress) : '';
             $ussd->version = isset($request->version) ? $request->version : '';
 

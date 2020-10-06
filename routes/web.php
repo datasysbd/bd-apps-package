@@ -19,12 +19,13 @@ Route::get('/', function () {
 // });
 Route::get('/ip/get', 'PublicController@ip_get')->name('ip_get');
 Route::get('/ip/test', 'PublicController@ip_test')->name('ip_test');
+Route::get('/ip/post', 'PublicController@ip_post')->name('ip_post');
 
 
 Auth::routes();
 Route::get('/download', 'SubscriberController@subscribe')->name('subscribe');
 
-Route::group(['middleware' => 'auth'],function() {
+Route::group(['middleware' => 'auth'], function () {
 
     Route::post('/lang', 'HomeController@lang')->name('lang');
     Route::get('/home', 'HomeController@index')->name('dashboard');
